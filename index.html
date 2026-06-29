@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nautilus Lab × GameDev — AI Asset Partnership</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:      #06070f;
+            --surface: #0d0f1e;
+            --border:  rgba(255,255,255,0.07);
+            --cyan:    #00e5cc;
+            --gold:    #f0b429;
+            --white:   #eef0f8;
+            --muted:   #6b7280;
+            --red:     #ff4560;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ── AMBIENT BACKGROUND ── */
+        .ambient {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 50% at 8% 20%,  rgba(0,229,204,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 40% at 92% 75%, rgba(240,180,41,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 60% at 50% 110%,rgba(0,229,204,0.04) 0%, transparent 50%);
+        }
+
+        /* ── GRID OVERLAY ── */
+        .grid-overlay {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.025;
+            background-image:
+                linear-gradient(var(--cyan) 1px, transparent 1px),
+                linear-gradient(90deg, var(--cyan) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+
+        /* ══ NAV ══ */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(6,7,15,0.85); backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+        }
+        .nav-inner {
+            max-width: 1100px; margin: 0 auto; padding: 0 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-logo {
+            font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 700;
+            color: var(--cyan); letter-spacing: 2px;
+        }
+        .nav-logo span { color: var(--white); }
+        .nav-links { display: flex; gap: 28px; }
+        .nav-links a {
+            color: var(--muted); text-decoration: none; font-size: 13px;
+            letter-spacing: 0.5px; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--white); }
+        .nav-cta {
+            padding: 8px 20px; font-size: 13px; font-weight: 600;
+            background: transparent; border: 1px solid var(--cyan);
+            color: var(--cyan); border-radius: 6px; cursor: pointer;
+            text-decoration: none; transition: all 0.2s; letter-spacing: 0.5px;
+        }
+        .nav-cta:hover { background: rgba(0,229,204,0.1); }
+
+        /* ══ HERO ══ */
+        .hero {
+            padding: 160px 0 100px;
+            border-bottom: 1px solid var(--border);
+        }
+        .hero-eyebrow {
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
+            margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+        }
+        .hero-eyebrow::before {
+            content: ''; width: 32px; height: 1px; background: var(--cyan);
+        }
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(32px, 5vw, 60px); font-weight: 900;
+            line-height: 1.05; letter-spacing: -1px; margin-bottom: 24px;
+        }
+        h1 .line-dim { color: rgba(238,240,248,0.25); }
+        h1 .line-accent { color: var(--cyan); }
+        .hero-sub {
+            font-size: 17px; color: var(--muted); max-width: 540px;
+            line-height: 1.7; margin-bottom: 44px;
+        }
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+        .btn-primary {
+            padding: 14px 32px; font-size: 14px; font-weight: 600; letter-spacing: 1px;
+            background: var(--cyan); color: var(--bg); border: none;
+            border-radius: 6px; cursor: pointer; text-decoration: none;
+            transition: all 0.2s; text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary:hover { background: #00ffea; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,229,204,0.35); }
+        .btn-ghost {
+            padding: 14px 32px; font-size: 14px; font-weight: 500;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--white); border-radius: 6px; cursor: pointer;
+            text-decoration: none; transition: all 0.2s; letter-spacing: 0.5px;
+        }
+        .btn-ghost:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); }
+
+        /* Hero visual — live demo terminal */
+        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .terminal {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; font-family: 'JetBrains Mono', monospace;
+        }
+        .terminal-bar {
+            padding: 12px 16px; background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.r { background: #ff5f56; } .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
+        .terminal-title { font-size: 11px; color: var(--muted); margin-left: 8px; letter-spacing: 1px; }
+        .terminal-body { padding: 20px; font-size: 12px; line-height: 1.9; }
+        .t-dim    { color: var(--muted); }
+        .t-cyan   { color: var(--cyan); }
+        .t-gold   { color: var(--gold); }
+        .t-white  { color: var(--white); }
+        .t-green  { color: #4ade80; }
+        .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--cyan); vertical-align: middle; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* ══ SECTION BASE ══ */
+        section { padding: 90px 0; border-bottom: 1px solid var(--border); }
+        .section-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(22px, 3vw, 36px); font-weight: 700;
+            margin-bottom: 14px; line-height: 1.2;
+        }
+        .section-sub { color: var(--muted); font-size: 15px; max-width: 500px; line-height: 1.7; margin-bottom: 52px; }
+
+        /* ══ WHAT WE OFFER ══ */
+        .offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .offer-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 28px 24px;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .offer-card:hover { border-color: rgba(0,229,204,0.3); transform: translateY(-3px); }
+        .offer-icon { font-size: 28px; margin-bottom: 16px; }
+        .offer-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--white); }
+        .offer-card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+        .offer-tag {
+            display: inline-block; margin-top: 16px; padding: 3px 10px;
+            font-size: 11px; font-family: 'JetBrains Mono', monospace;
+            border-radius: 4px; letter-spacing: 1px;
+        }
+        .tag-free  { background: rgba(0,229,204,0.1); color: var(--cyan); border: 1px solid rgba(0,229,204,0.2); }
+        .tag-collab { background: rgba(240,180,41,0.1); color: var(--gold); border: 1px solid rgba(240,180,41,0.2); }
+        .tag-custom { background: rgba(255,69,96,0.1); color: var(--red); border: 1px solid rgba(255,69,96,0.2); }
+
+        /* ══ DEMO — GENERADOR LIVE ══ */
+        .demo-wrap {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+        }
+        .demo-header {
+            padding: 20px 28px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .demo-header h3 { font-size: 14px; font-weight: 600; color: var(--white); }
+        .live-badge {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 11px; color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+        }
+        .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); animation: blink 1s step-end infinite; }
+        .demo-body { padding: 28px; }
+        .demo-prompt-row { display: flex; gap: 12px; margin-bottom: 20px; }
+        .demo-input {
+            flex: 1; padding: 12px 16px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--white); font-family: 'Inter', sans-serif;
+            font-size: 14px; outline: none; transition: border-color 0.2s;
+        }
+        .demo-input:focus { border-color: rgba(0,229,204,0.4); }
+        .demo-run {
+            padding: 12px 24px; background: var(--cyan); color: var(--bg);
+            border: none; border-radius: 8px; font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+            font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
+        }
+        .demo-run:hover { background: #00ffea; }
+        .demo-run:disabled { opacity: 0.5; cursor: not-allowed; }
+        .demo-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .demo-chip {
+            padding: 5px 12px; font-size: 12px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 20px; cursor: pointer; transition: all 0.2s;
+            color: var(--muted);
+        }
+        .demo-chip:hover { border-color: rgba(0,229,204,0.4); color: var(--cyan); }
+        /* Image grid 3 */
+        .demo-grid {
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+            margin-bottom: 16px;
+        }
+        .demo-slot {
+            aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; transition: border-color 0.3s;
+        }
+        .demo-slot.ready { border-color: rgba(0,229,204,0.3); }
+        .demo-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .demo-slot-n {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px; color: rgba(255,255,255,0.08);
+        }
+        .demo-status {
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            color: var(--cyan); text-align: center; min-height: 20px;
+        }
+        .demo-dl {
+            width: 100%; padding: 12px; font-size: 13px; font-weight: 600;
+            background: transparent; border: 1px solid rgba(0,229,204,0.3);
+            color: var(--cyan); border-radius: 8px; cursor: pointer;
+            transition: all 0.2s; font-family: 'Inter', sans-serif;
+            margin-top: 12px; letter-spacing: 0.5px; display: none;
+        }
+        .demo-dl:hover { background: rgba(0,229,204,0.08); }
+
+        /* ══ ABOUT / PHILOSOPHY ══ */
+        .philosophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+        .philosophy-text h2 { margin-bottom: 20px; }
+        .philosophy-text p { color: var(--muted); font-size: 15px; line-height: 1.8; margin-bottom: 16px; }
+        .philosophy-text p strong { color: var(--white); }
+        .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 36px; }
+        .stat-box {
+            padding: 20px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; text-align: center;
+        }
+        .stat-num {
+            font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900;
+            color: var(--cyan); display: block; margin-bottom: 4px;
+        }
+        .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
+        .tools-list { display: flex; flex-direction: column; gap: 12px; }
+        .tool-row {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+        .tool-row:hover { border-color: rgba(0,229,204,0.2); }
+        .tool-icon { font-size: 20px; width: 32px; text-align: center; }
+        .tool-name { font-size: 14px; font-weight: 500; }
+        .tool-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .tool-badge {
+            margin-left: auto; font-size: 11px; padding: 3px 9px;
+            background: rgba(0,229,204,0.08); color: var(--cyan);
+            border: 1px solid rgba(0,229,204,0.2); border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+        }
+
+        /* ══ CONTACT ══ */
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+        .contact-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 32px;
+        }
+        .contact-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .contact-card p { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.7; }
+        .contact-links { display: flex; flex-direction: column; gap: 12px; }
+        .contact-link {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 8px; text-decoration: none; color: var(--white);
+            font-size: 14px; transition: all 0.2s;
+        }
+        .contact-link:hover { border-color: rgba(0,229,204,0.3); background: rgba(0,229,204,0.04); color: var(--cyan); }
+        .contact-link .link-icon { font-size: 18px; }
+        .contact-link .link-label { font-size: 11px; color: var(--muted); display: block; margin-top: 1px; }
+        .manifesto {
+            background: rgba(0,229,204,0.04); border: 1px solid rgba(0,229,204,0.15);
+            border-radius: 12px; padding: 32px;
+        }
+        .manifesto blockquote {
+            font-size: 16px; line-height: 1.8; color: var(--white);
+            font-style: italic; margin-bottom: 20px;
+        }
+        .manifesto blockquote em { color: var(--cyan); font-style: normal; font-weight: 600; }
+        .manifesto cite { font-size: 13px; color: var(--muted); font-style: normal; }
+
+        /* ══ FOOTER ══ */
+        footer {
+            padding: 40px 0; text-align: center;
+            font-size: 13px; color: var(--muted);
+        }
+        footer a { color: var(--cyan); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ══ RESPONSIVE ══ */
+        @media (max-width: 768px) {
+            .hero-grid, .offer-grid, .philosophy-grid, .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            .offer-grid { grid-template-columns: 1fr 1fr; }
+            .terminal { display: none; }
+            .nav-links { display: none; }
+            h1 { font-size: 28px; }
+        }
+        @media (max-width: 480px) {
+            .offer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-inner">
+            <div class="nav-logo">NAUTILUS<span> LAB</span></div>
+            <div class="nav-links">
+                <a href="#offer">What we offer</a>
+                <a href="#demo">Live demo</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <a href="#contact" class="nav-cta">Partner with us</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="wrap">
+            <div class="hero-grid">
+                <div>
+                    <div class="hero-eyebrow">AI Asset Studio · Guadalajara MX</div>
+                    <h1>
+                        <span class="line-dim">We build tools.</span><br>
+                        <span class="line-accent">You ship games.</span>
+                    </h1>
+                    <p class="hero-sub">
+                        Nautilus Lab is an indie AI studio that creates production-ready game assets, 
+                        cyberpunk art packs, and custom automation tools — built on local AI and open infrastructure. 
+                        No subscriptions. No gatekeeping. Just craft.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#demo" class="btn-primary">Try the generator</a>
+                        <a href="#offer" class="btn-ghost">See what we offer →</a>
+                    </div>
+                </div>
+
+                <!-- Terminal visual -->
+                <div class="terminal">
+                    <div class="terminal-bar">
+                        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+                        <span class="terminal-title">nautilus_asset_bot.py</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div><span class="t-dim">$</span> <span class="t-cyan">python3</span> <span class="t-white">miami_vice_bot.py</span></div>
+                        <div><span class="t-dim">────────────────────────────────</span></div>
+                        <div><span class="t-green">✓</span> <span class="t-dim">Ollama · qwen3:4b · GPU Vega iGPU</span></div>
+                        <div><span class="t-green">✓</span> <span class="t-dim">InvokeAI · FLUX · ROCm HSA 9.0.0</span></div>
+                        <div><span class="t-green">✓</span> <span class="t-dim">Pollinations · online fallback</span></div>
+                        <div><span class="t-dim">────────────────────────────────</span></div>
+                        <div><span class="t-gold">⚡</span> <span class="t-white">Batch 01 · 15 assets queued</span></div>
+                        <div><span class="t-cyan">→</span> <span class="t-dim">miami_01_gangster_neon.png</span> <span class="t-green">done</span></div>
+                        <div><span class="t-cyan">→</span> <span class="t-dim">miami_02_samurai_vice.png</span> <span class="t-green">done</span></div>
+                        <div><span class="t-cyan">→</span> <span class="t-dim">miami_03_skyline_night.png</span> <span class="t-green">done</span></div>
+                        <div><span class="t-cyan">→</span> <span class="t-dim">miami_04_cartel_boss.png</span> <span class="t-gold">generating…</span></div>
+                        <div><span class="t-dim">Elapsed: 00:03:21 · ETA: ~12 min</span></div>
+                        <div><span class="t-dim">Pack: </span><span class="t-gold">NEON-EDITION-GTV1N</span> <span class="t-cursor"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHAT WE OFFER -->
+    <section id="offer">
+        <div class="wrap">
+            <div class="section-label">// what we offer</div>
+            <h2>Built for indie studios.<br>Not for enterprise.</h2>
+            <p class="section-sub">We share our tools, workflows and assets because we believe the indie dev community grows when everyone has access to good infrastructure.</p>
+
+            <div class="offer-grid">
+                <div class="offer-card">
+                    <div class="offer-icon">🎨</div>
+                    <h3>AI Asset Packs</h3>
+                    <p>Cyberpunk, Vice City, synthwave and more. Production-ready PNG packs generated with FLUX — characters, backgrounds, props, UI elements.</p>
+                    <span class="offer-tag tag-free">FREE / ITCH.IO</span>
+                </div>
+                <div class="offer-card">
+                    <div class="offer-icon">🤖</div>
+                    <h3>Custom Bot Tools</h3>
+                    <p>Telegram bots, batch generators and automation scripts tailored to your studio's pipeline. Python, Linux-native, zero subscription cost.</p>
+                    <span class="offer-tag tag-collab">COLLAB</span>
+                </div>
+                <div class="offer-card">
+                    <div class="offer-icon">🌐</div>
+                    <h3>Live Web Generators</h3>
+                    <p>Embeddable AI image generators for your community. Fully branded, offline-capable with local InvokeAI fallback. No API key exposed.</p>
+                    <span class="offer-tag tag-collab">COLLAB</span>
+                </div>
+                <div class="offer-card">
+                    <div class="offer-icon">📖</div>
+                    <h3>Prompt Engineering</h3>
+                    <p>We write and tune prompts for your art style. FLUX, Stable Diffusion, Ollama. Character sheets, environment sets, UI kits — consistent style across packs.</p>
+                    <span class="offer-tag tag-free">ON REQUEST</span>
+                </div>
+                <div class="offer-card">
+                    <div class="offer-icon">🛠️</div>
+                    <h3>Pipeline Integration</h3>
+                    <p>Need an asset bot that feeds directly into your game engine folder structure? We build Python automation that fits your workflow, not the other way around.</p>
+                    <span class="offer-tag tag-custom">CUSTOM</span>
+                </div>
+                <div class="offer-card">
+                    <div class="offer-icon">🎮</div>
+                    <h3>Cross-Promotion</h3>
+                    <p>We feature partner studios in our Telegram bot communities, Blogger content and Itch.io packs. Real audience, real reach — mutual benefit, zero cost.</p>
+                    <span class="offer-tag tag-free">FREE</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LIVE DEMO -->
+    <section id="demo">
+        <div class="wrap">
+            <div class="section-label">// live demo</div>
+            <h2>Generate an asset<br>right now.</h2>
+            <p class="section-sub">This is the same engine powering our packs. Try it — type a scene, pick a style, get images.</p>
+
+            <div class="demo-wrap">
+                <div class="demo-header">
+                    <h3>MangaAI Pro · Powered by Pollinations FLUX</h3>
+                    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+                </div>
+                <div class="demo-body">
+                    <div class="demo-chips">
+                        <span class="demo-chip" data-p="cyberpunk gangster in white suit, Vice City neon night, tropical">🕴️ Vice City Boss</span>
+                        <span class="demo-chip" data-p="neon samurai with katana, Miami tropical city, electric teal and gold">⚔️ Neon Samurai</span>
+                        <span class="demo-chip" data-p="retro 80s sports car, neon reflections, synthwave Miami street">🚗 Synthwave Car</span>
+                        <span class="demo-chip" data-p="sci-fi spaceship cockpit interior, neon panels, cyberpunk futuristic">🚀 Sci-Fi Cockpit</span>
+                        <span class="demo-chip" data-p="fantasy dragon in cyberpunk city, neon lights, epic cinematic">🐉 Cyber Dragon</span>
+                    </div>
+                    <div class="demo-prompt-row">
+                        <input class="demo-input" id="demoPrompt" type="text" placeholder="Describe your game asset...">
+                        <button class="demo-run" id="demoBtn" onclick="runDemo()">Generate ✦</button>
+                    </div>
+                    <div class="demo-grid">
+                        <div class="demo-slot" id="ds0"><div class="demo-slot-n">1</div></div>
+                        <div class="demo-slot" id="ds1"><div class="demo-slot-n">2</div></div>
+                        <div class="demo-slot" id="ds2"><div class="demo-slot-n">3</div></div>
+                    </div>
+                    <div class="demo-status" id="demoStatus"></div>
+                    <button class="demo-dl" id="demoDl" onclick="demoDownload()">⬇ Download 3-image pack (.zip)</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+        <div class="wrap">
+            <div class="philosophy-grid">
+                <div class="philosophy-text">
+                    <div class="section-label">// about nautilus lab</div>
+                    <h2>Local AI.<br>Zero gatekeeping.</h2>
+                    <p>Nautilus Lab is a <strong>one-person indie studio</strong> based in Tlaquepaque, Jalisco, México. Every tool, bot, and asset pack runs on local hardware — an HP t740 thin client running Fedora with an AMD Vega iGPU, Ollama, and InvokeAI.</p>
+                    <p>We don't depend on cloud APIs or expensive subscriptions. That means <strong>no usage limits, no watermarks, no monthly bills</strong> — and tools that keep working offline.</p>
+                    <p>The philosophy is simple: <strong>build in the open, share what works, collaborate honestly.</strong> If a tool we made helps your studio ship faster, that's the point.</p>
+                    <div class="stat-row">
+                        <div class="stat-box">
+                            <span class="stat-num">∞</span>
+                            <span class="stat-label">Daily generations</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-num">0$</span>
+                            <span class="stat-label">API subscription</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-label">Local AI stack</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tools-list">
+                    <div class="section-label">// our stack</div>
+                    <div class="tool-row">
+                        <div class="tool-icon">🦙</div>
+                        <div><div class="tool-name">Ollama · qwen3:4b</div><div class="tool-desc">Local LLM — prompt improvement, text gen</div></div>
+                        <span class="tool-badge">GPU</span>
+                    </div>
+                    <div class="tool-row">
+                        <div class="tool-icon">🎨</div>
+                        <div><div class="tool-name">InvokeAI · FLUX</div><div class="tool-desc">Local image generation · ROCm AMD Vega</div></div>
+                        <span class="tool-badge">LOCAL</span>
+                    </div>
+                    <div class="tool-row">
+                        <div class="tool-icon">🌐</div>
+                        <div><div class="tool-name">Pollinations.ai</div><div class="tool-desc">Online fallback · FLUX · no key needed</div></div>
+                        <span class="tool-badge">FREE</span>
+                    </div>
+                    <div class="tool-row">
+                        <div class="tool-icon">🤖</div>
+                        <div><div class="tool-name">python-telegram-bot</div><div class="tool-desc">Telegram bots · SQLite · systemd</div></div>
+                        <span class="tool-badge">OPEN</span>
+                    </div>
+                    <div class="tool-row">
+                        <div class="tool-icon">🐧</div>
+                        <div><div class="tool-name">Fedora · Caddy</div><div class="tool-desc">Linux server · HTTPS reverse proxy</div></div>
+                        <span class="tool-badge">LOCAL</span>
+                    </div>
+                    <div class="tool-row">
+                        <div class="tool-icon">🎮</div>
+                        <div><div class="tool-name">Itch.io · Gumroad</div><div class="tool-desc">Asset packs · digital products distribution</div></div>
+                        <span class="tool-badge">LIVE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+        <div class="wrap">
+            <div class="contact-grid">
+                <div>
+                    <div class="section-label">// let's build together</div>
+                    <h2>Open to<br>collabs.</h2>
+                    <div class="contact-card" style="margin-top:28px;">
+                        <h3>Reach us</h3>
+                        <p>Whether you need a custom asset pack, a bot for your community, or just want to share tools — we're open to it.</p>
+                        <div class="contact-links">
+                            <a href="https://nautlab.itch.io" target="_blank" class="contact-link">
+                                <span class="link-icon">🎮</span>
+                                <div>
+                                    <span>nautlab.itch.io</span>
+                                    <span class="link-label">Asset packs & game tools</span>
+                                </div>
+                            </a>
+                            <a href="https://nautilulab.gumroad.com" target="_blank" class="contact-link">
+                                <span class="link-icon">💾</span>
+                                <div>
+                                    <span>nautilulab.gumroad.com</span>
+                                    <span class="link-label">Digital products</span>
+                                </div>
+                            </a>
+                            <a href="https://www.linkedin.com/in/luis-fernando-santiesteban" target="_blank" class="contact-link">
+                                <span class="link-icon">💼</span>
+                                <div>
+                                    <span>LinkedIn · Luis Fernando</span>
+                                    <span class="link-label">Direct contact & collabs</span>
+                                </div>
+                            </a>
+                            <a href="https://ferplex.github.io" target="_blank" class="contact-link">
+                                <span class="link-icon">🌐</span>
+                                <div>
+                                    <span>ferplex.github.io</span>
+                                    <span class="link-label">Prompt Forge & live tools</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manifesto">
+                    <blockquote>
+                        "The indie dev scene doesn't grow when everyone guards their tools. 
+                        It grows when we <em>share what works</em>, build on each other's work, 
+                        and stay realistic about what we can do alone versus together.
+                        <br><br>
+                        We're not a corporation. We're a studio of one, with the output of many — 
+                        because <em>AI amplifies craft</em>, and craft is meant to be shared."
+                    </blockquote>
+                    <cite>— Luis Fernando · Nautilus Lab · Tlaquepaque, MX</cite>
+
+                    <div style="margin-top:28px;padding-top:24px;border-top:1px solid var(--border);">
+                        <div class="section-label" style="margin-bottom:12px;">// also find us at</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                            <a href="https://www.youtube.com/@ciberkatananime" target="_blank" style="color:var(--muted);text-decoration:none;font-size:13px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,204,0.3)';this.style.color='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">▶ @ciberkatananime</a>
+                            <a href="https://soundcloud.com/luisdrems" target="_blank" style="color:var(--muted);text-decoration:none;font-size:13px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,204,0.3)';this.style.color='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">♫ luisdrems</a>
+                            <a href="https://www.tiktok.com/@nautiluslabarch" target="_blank" style="color:var(--muted);text-decoration:none;font-size:13px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,204,0.3)';this.style.color='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">◈ @nautiluslabarch</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="wrap">
+            <p>© 2026 <a href="https://ferplex.github.io">Nautilus Lab</a> · Built with local AI · Tlaquepaque, Jalisco, MX</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // ── Demo chip clicks ──
+        document.querySelectorAll('.demo-chip').forEach(c => {
+            c.addEventListener('click', () => {
+                document.getElementById('demoPrompt').value = c.dataset.p;
+            });
+        });
+
+        let demoBlobs = [];
+
+        const GTA_SUFFIX = [
+            'GTA VI Vice City aesthetic, Rockstar Games art style, electric cyan and gold neon, tropical night, cinematic realism, ultra detailed',
+            'cyberpunk Miami Vice art direction, teal and purple neon, wet pavement reflections, dramatic cinematography, game asset quality',
+            'synthwave Vice City aesthetic, chrome and neon, 80s retrofuturistic Miami, professional game art, sharp detail',
+        ];
+
+        function pollinationsUrl(prompt, seed) {
+            return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}&enhance=true`;
+        }
+
+        async function runDemo() {
+            const prompt = document.getElementById('demoPrompt').value.trim();
+            if (!prompt) { document.getElementById('demoStatus').textContent = 'Write a prompt first.'; return; }
+
+            const btn = document.getElementById('demoBtn');
+            btn.disabled = true;
+            document.getElementById('demoDl').style.display = 'none';
+            demoBlobs = [];
+
+            for (let i = 0; i < 3; i++) {
+                const slot = document.getElementById('ds' + i);
+                slot.innerHTML = `<div class="demo-slot-n">${i+1}</div>`;
+                slot.classList.remove('ready');
+            }
+
+            const suffix = GTA_SUFFIX[Math.floor(Math.random() * GTA_SUFFIX.length)];
+            const fullPrompt = `${prompt}, ${suffix}, masterpiece, 8k`;
+
+            try {
+                for (let i = 0; i < 3; i++) {
+                    document.getElementById('demoStatus').textContent = `Generating ${i+1}/3…`;
+                    const seed = Math.floor(Math.random() * 99999) + i * 1337;
+                    const res  = await fetch(pollinationsUrl(fullPrompt, seed));
+                    if (!res.ok) throw new Error('fetch failed');
+                    const blob = await res.blob();
+                    demoBlobs.push(blob);
+
+                    const slot = document.getElementById('ds' + i);
+                    const img  = document.createElement('img');
+                    img.src    = URL.createObjectURL(blob);
+                    slot.innerHTML = '';
+                    slot.appendChild(img);
+                    slot.classList.add('ready');
+                }
+                document.getElementById('demoStatus').textContent = '✦ Done — 3 assets generated';
+                document.getElementById('demoDl').style.display = 'block';
+            } catch(e) {
+                document.getElementById('demoStatus').textContent = 'Error generating. Try again.';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function demoDownload() {
+            if (!demoBlobs.length) return;
+            const zip    = new JSZip();
+            const folder = zip.folder('nautilus-lab-assets');
+            demoBlobs.forEach((b, i) => folder.file(`asset_${i+1}.png`, b));
+            folder.file('README.txt', 'Nautilus Lab · AI Asset Pack\nnautilulab.gumroad.com · nautlab.itch.io\n');
+            const content = await zip.generateAsync({ type: 'blob' });
+            const a = document.createElement('a');
+            a.href     = URL.createObjectURL(content);
+            a.download = 'nautilus-lab-demo-pack.zip';
+            a.click();
+        }
+
+        document.getElementById('demoPrompt').addEventListener('keydown', e => {
+            if (e.key === 'Enter') runDemo();
+        });
+    </script>
+</body>
+</html>
